@@ -1,0 +1,5 @@
+name = YangchengLank Sina
+description = .
+dependencies[] = sinaweibo
+version = 0.1.apha
+core = 7.x

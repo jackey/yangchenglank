@@ -1,0 +1,65 @@
+<?php
+
+// Sina module
+
+/**
+ * Implements hook_block_info()
+ */
+function ycl_sina_block_info() {
+	$blocks = array();
+
+	$blocks['sina_public_line_block'] = array(
+		'info' => t("Sina One Publicline"),
+		'cache' => DRUPAL_NO_CACHE
+	);
+
+	return $blocks;
+}
+
+/**
+ * Implements hook_block_view()
+ */
+function ycl_sina_block_view($delta ) {
+	switch ($delta) {
+		case "sina_public_line_block":
+			return array(
+				'subject' => NULL,
+				'content' => theme('sina_public_line'),
+			);
+			break;
+	}
+}
+
+/**
+ * Get sina uid timeline.
+ */
+function ycl_sina_get_user_timeline() {
+    module_load_include('php', 'sinaweibo', 'saetv2.ex.class');
+    $key = variable_get('weibo_consumer_key', '');
+    $secret = variable_get('weibo_consumer_secret', '');
+    $c = new SaeTClientV2($key, $secret, $_SESSION['weibooauth_token']['access_token']);
+    $uid_get = $c->get_uid();
+    $weibo_uid = $uid_get['uid'];
+    $time_line = $c->user_timeline_by_id($weibo_uid, 1, 1);
+    return $time_line;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ycl_sina_theme() {
+	$hooks = array();
+
+	$hooks['sina_public_line'] = array(
+		'template' => 'public_line',
+	);
+
+	return $hooks;
+}
+
+/**
+ * Implements hook_process_THEME_NAME_()
+ */
+function ycl_sina_process_sina_public_line(&$vars) {
+	//TODO:
+}
