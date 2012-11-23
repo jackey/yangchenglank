@@ -1,6 +1,10 @@
 <script type="text/javascript">
-	function resize(img, max_width, max_height) {
-		
+	function resize(img) {
+		var $ = jQuery;
+		var image = $(img);
+		if(image.width() >image.height()) {
+			
+		}
 	}
 </script>
 
