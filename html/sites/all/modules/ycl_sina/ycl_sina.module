@@ -17,6 +17,17 @@ function ycl_sina_block_info() {
 }
 
 /**
+ * Get super admin sina weibo access token
+ */
+function ycl_super_admin_accesstoken() {
+  return db_select('weibo_account')
+	->fields('weibo_account', array('oauth_token'))
+	->condition('uid', 1)
+	->execute()
+	->fetchField();
+}
+
+/**
  * Implements hook_block_view()
  */
 function ycl_sina_block_view($delta ) {
@@ -37,7 +48,8 @@ function ycl_sina_get_user_timeline() {
     module_load_include('php', 'sinaweibo', 'saetv2.ex.class');
     $key = variable_get('weibo_consumer_key', '');
     $secret = variable_get('weibo_consumer_secret', '');
-    $c = new SaeTClientV2($key, $secret, $_SESSION['weibooauth_token']['access_token']);
+    $access_token = ycl_super_admin_accesstoken();
+    $c = new SaeTClientV2($key, $secret, $access_token);
     $uid_get = $c->get_uid();
     $weibo_uid = $uid_get['uid'];
     $time_line = $c->user_timeline_by_id($weibo_uid, 1, 1);

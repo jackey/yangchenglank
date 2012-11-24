@@ -3,7 +3,10 @@
 		var $ = jQuery;
 		var image = $(img);
 		if(image.width() >image.height()) {
-			
+			image.addClass('horizontal-image');
+		}
+		else {
+			image.addClass('vertical-image');
 		}
 	}
 </script>
