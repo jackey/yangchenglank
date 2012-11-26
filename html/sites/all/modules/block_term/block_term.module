@@ -43,7 +43,11 @@ function block_term_form_block_admin_configure_alter(&$form, &$form_state) {
     if ($tree && (count($tree) > 0)) {
       $options[$vocabulary->name] = array();
       foreach ($tree as $term) {
-        $options[$vocabulary->name][$term->tid] = str_repeat('-', $term->depth) . $term->name;
+        $text = str_repeat('--', $term->depth) . $term->name;
+        if ($term->depth == 0) {
+          //$text = '<span class="parent-term-text">'.$text.'</span>';
+        }
+        $options[$vocabulary->name][$term->tid] = $text;
       }
     }
   }
