@@ -1,0 +1,5 @@
+name = Settings Page Of Block Term
+description = Extension of Block term.
+core = 7.x
+dependencies[] = block_term
+

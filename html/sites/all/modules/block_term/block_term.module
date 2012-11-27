@@ -104,10 +104,10 @@ function block_term_block_list_alter(&$blocks) {
     $block_tids[$record->module][$record->delta][$tid] = TRUE;
     //把子term也加进来. 
     // By jackeychen <jziwenchen@gmail.com>
-    $children_terms = taxonomy_get_children($tid);
-    foreach ($children_terms as $children_term) {
-      $block_tids[$record->module][$record->delta][$children_term->tid] = TRUE;
-    }
+    // $children_terms = taxonomy_get_children($tid);
+    // foreach ($children_terms as $children_term) {
+    //   $block_tids[$record->module][$record->delta][$children_term->tid] = TRUE;
+    // }
   }
 
   $node = menu_get_object();

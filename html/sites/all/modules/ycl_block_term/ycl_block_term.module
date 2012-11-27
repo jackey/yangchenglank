@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * Iplements hook_menu()
+ */
+function ycl_block_term_menu() {
+ 	$hooks = array();
+ 	$hooks['admin/config/content/block_term'] = array(
+ 		'title' => 'Block Term Settings',
+ 		'page callback' => 'drupal_get_form',
+ 		'page arguments' => array('ycl_block_term_setting_form'),
+ 		'access arguments' => array('administer blocks'),
+ 		'description' => 'Settings Block on term.',
+ 	);
+
+ 	$hooks['admin/config/content/block_term/%/%'] = array(
+ 		'page callback' => 'drupal_get_form',
+ 		'page arguments' => array('ycl_block_term_setting_form', 0, 1),
+ 		'access arguments' => array('administer blocks'),
+ 	);
+
+ 	return $hooks;
+}
+
+/**
+ * Form for special block term.
+ */
+function ycl_block_term_setting_form($form, $form_state, $module = '', $delta = '') {
+ 	$form = array();
+
+ 	// 所有允许列出的区块
+	$blocks = block_list_be_allowed();
+	$rows = array();
+	if ($module == '' && !count($blocks)) {
+		$module = $blocks[0]['module'];
+		$delta = $blocks[0]['delta'];
+	}
+
+	$form['module'] = array(
+		'#type' => 'hidden',
+		'#default_value' => $module
+	);
+	$form['delta'] = array(
+		'#type' => 'hidden',
+		'#default_value' => $delta
+	);
+
+	foreach ($blocks as $block_def){
+		$block = load_block($block_def['module'], $block_def['delta']);
+		$link = l($block_def['title'], 'admin/config/content/block_term/'.$block_def['module'].'/'.$block_def['delta']);
+		$rows[] = array($link);
+	}
+	
+	$form['block_list'] = array(
+		'#markup' => theme('table', array('rows' => $rows, 'header' => array()))
+	);
+
+	$vocabs = taxonomy_vocabulary_get_names();
+
+	$default_tid_options = db_query("SELECT tid FROM {block_term} WHERE module = :module AND delta = :delta", array(
+			':module' => $module,
+    		':delta' => $delta,
+  	))->fetchCol();
+  	$form['visibility']['terms'] = array(
+    	'#type' => 'fieldset',
+    	'#title' => t('Terms'),
+    	'#collapsible' => TRUE,
+    	'#collapsed' => TRUE,
+    	'#group' => 'visibility',
+    	'#weight' => 6,
+    	'#description' => t('Show this block only on pages that display content with any of the given term(s). If you select no terms, there will be no term-specific limitation.'),
+    	'#tree' => true,
+  	);
+	$vocabularies = taxonomy_get_vocabularies();
+	$options = array();
+	foreach ($vocabularies as $vid => $vocabulary) {
+		$tree = taxonomy_get_tree($vid);
+		if ($tree && (count($tree) > 0)) {
+		  $options[$vocabulary->name] = array();
+		  foreach ($tree as $term) {
+			    $text = str_repeat('--', $term->depth) . $term->name;
+			    if ($term->depth == 0) {
+			      //$text = '<span class="parent-term-text">'.$text.'</span>';
+			    }
+			    $options[$vocabulary->name][$term->tid] = $text;
+		  }
+		}
+	}
+	foreach ($options as $vocab => $terms) {
+		$form['visibility']['terms'][$vocab]['tids'] = array(
+		  '#title' => $vocabs[$vocab]->name,
+		  '#type' => 'checkboxes',
+		  '#default_value' => $default_tid_options,
+		  '#options' => $terms,
+		  '#multiple' => TRUE,
+		);
+	}
+	$form['#submit'][] = 'ycl_block_term_form_block_admin_configure_submit';
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit')
+	);
+	return $form;
+}
+
+/**
+ * Block term settings form submit handler.
+ */
+function ycl_block_term_form_block_admin_configure_submit(&$form, $form_state) {
+	db_delete('block_term')
+		->condition('module', $form_state['values']['module'])
+		->condition('delta', $form_state['values']['delta'])
+		->execute();
+	$query = db_insert('block_term')->fields(array('tid', 'module', 'delta'));
+	// TODO: isn't there a cleaner way than this double foreach?
+	foreach ($form_state['values']['terms'] as $vocab) {
+		foreach (array_filter($vocab['tids']) as $tid) {
+			$query->values(array(
+				'tid' => $tid,
+				'module' => $form_state['values']['module'],
+				'delta' => $form_state['values']['delta'],
+			));
+		}
+	}
+	$query->execute();
+}
+
+/**
+ * Load block object.
+ */
+function load_block($module, $delta) {
+	return db_select('block', 'b')
+    	->fields('b')
+    	->condition('module', $module)
+    	->condition('delta', $delta)
+    	->execute()
+    	->fetchObject();
+}
+
+/**
+ * Allow block for term
+ */
+function block_list_be_allowed() {
+	$blocks = array();
+	$blocks[] = array(
+		'module' => 'ycl_sina', 
+		'delta' => 'sina_public_line_block', 
+		'title' => 'Sina Weibo'
+	);
+	$blocks[] = array(
+		'module' => 'user',
+		'delta' => 'online',
+		'title' => 'User Online',
+	);
+
+	return $blocks;
+}
+
