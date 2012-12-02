@@ -15,7 +15,7 @@ function ycl_block_term_menu() {
 
  	$hooks['admin/config/content/block_term/%/%'] = array(
  		'page callback' => 'drupal_get_form',
- 		'page arguments' => array('ycl_block_term_setting_form', 0, 1),
+ 		'page arguments' => array('ycl_block_term_setting_form', 4, 5),
  		'access arguments' => array('administer blocks'),
  	);
 
