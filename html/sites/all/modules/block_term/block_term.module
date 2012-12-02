@@ -123,6 +123,11 @@ function block_term_block_list_alter(&$blocks) {
       }
     }
   }
+
+  //判断是否是term页面
+  if (arg(0) == 'taxonomy' && arg(1) == 'term') {
+    $node_tids[arg(2)] = TRUE;
+  }
   
   foreach ($blocks as $key => $block) {
     if (!isset($block->theme) || !isset($block->status) || $block->theme != $theme_key || $block->status != 1) {
@@ -135,6 +140,15 @@ function block_term_block_list_alter(&$blocks) {
     // the settings from this block, remove it from the block list.
     if (isset($block_tids[$block->module][$block->delta])) {
       if (!empty($node)) {
+        // This is a node or node edit page.
+        if (!array_intersect_key($block_tids[$block->module][$block->delta], $node_tids)) {
+          // This block should not be displayed for this term.
+          unset($blocks[$key]);
+          continue;
+        }
+      }
+      //判断是否是term页面
+      else if (arg(0) == 'taxonomy' && arg(1) == 'term') {
         // This is a node or node edit page.
         if (!array_intersect_key($block_tids[$block->module][$block->delta], $node_tids)) {
           // This block should not be displayed for this term.
