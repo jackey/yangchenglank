@@ -116,10 +116,10 @@ function block_term_block_list_alter(&$blocks) {
     // Get taxonomy_term_reference field names.
     $taxonomy_fields = db_query("SELECT field_name FROM {field_config} WHERE type = 'taxonomy_term_reference'");
     foreach ($taxonomy_fields as $field) {
-      if (isset($node->{$field->field_name}[$node->language])) {
-        foreach ($node->{$field->field_name}[$node->language] as $term) {
+      if (isset($node->{$field->field_name}[LANGUAGE_NONE])) {
+        foreach ($node->{$field->field_name}[LANGUAGE_NONE] as $term) {
           $node_tids[$term['tid']] = TRUE;
-        }        
+        }
       }
     }
   }
